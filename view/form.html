@@ -1,0 +1,114 @@
+<html>
+    <body style="background: linear-gradient(135deg, #F97794 10%, #623AA2 100%)">
+        <form onsubmit="saveToLocalStorage(event) " method="post">
+            <label> Name</label>
+            <input id="username" type="text" name="username"  required/>
+            <label> EmailId</label>
+            <input id="email" type="email" name="emailId"  required/>
+            <label> Phone Number</label>
+            <input id="phonenumber" type="tel" name="phonenumber1" />
+            <button style="background-color: black;color: blue;"> Submit </button>
+        </form>
+        <ul id='listOfitems'></ul>
+        <script>
+            function saveToLocalStorage(event) {
+                event.preventDefault();
+                const name = event.target.username.value;
+                const email = event.target.emailId.value;
+                const phonenumber = event.target.phonenumber.value;
+                // localStorage.setItem('name', name);
+                // localStorage.setItem('email', email);
+                // localStorage.setItem('phonenumber', phonenumber)
+                const obj = {
+                    name,
+                    email,
+
+                    phonenumber
+                }
+                axios.post("http://localhost:5000/user/add-user",obj)
+                .then((response) => {
+                    showListofRegisteredUser(response.data);
+                    console.log(response);
+                    
+                })
+                .catch((err) => {
+                    document.body.innerHTML = document.body.innerHTML + "<h4>something went wrong</h4>"
+                    console.log(err)})
+                //localStorage.setItem(obj.email, JSON.stringify(obj))
+                //showListofRegisteredUser(obj)
+            }
+
+            window.addEventListener('DOMContentLoaded', (event) => {
+                axios.get("http://localhost:5000/user/get-users")
+                .then((response) => {
+                    for(var i = 0;i<response.data.allUsers.length;i++){
+                        showListofRegisteredUser(response.data.allUsers[i])
+                    }
+                    console.log(response)
+
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+                
+                //Object.keys(localStorage).forEach(key => {
+                 //   const user = JSON.parse(localStorage.getItem(key))
+                 //   showListofRegisteredUser(user)
+                //})
+            })
+
+            function showListofRegisteredUser(user){
+                
+                parentNode = document.getElementById('listOfitems');
+                const createNewUserHtml = `<li id='${user.id}'>${user.name} - ${user.email} - ${user.phonenumber}
+                                                <button onclick=deleteUser('${user.id}')>Delete</button> 
+                                                </li>`
+                                               // <button onclick=editUserDetails('${user.email}','${user.name}','${user.phonenumber}','${user.id}')>Edit</button>
+                                           // </li>
+                                            
+                console.log(createNewUserHtml)
+                parentNode.innerHTML +=  createNewUserHtml;
+                console.log(parentNode.innerHTML)
+            }
+
+            /*function editUserDetails(emailId,name,phonenumber,UserId){
+                document.getElementById('email').value = emailId; 
+                document.getElementById('username').value = name;
+                document.getElementById('phonenumber').value = phonenumber;
+                deleteUser(UserId);
+               /* axios.put(`https://crudcrud.com/api/f253cfa874674e8483e3daa36ca4b3b0/appointmentData/${UserId}`)
+                .then((reeponse) => {
+                    console.log('editing started');
+                    removeItemFromScreen(UserId);
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+                
+            }*/
+            
+            
+            function deleteUser(UserId) {
+                //localStorage.removeItem(email)
+                
+                axios.delete(`http://localhost:5000/user/delete-user/${UserId}`)
+                .then((response ) => {
+                    removeItemFromScreen(UserId)
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+            }
+
+            function removeItemFromScreen(UserId){
+                const parentNode = document.getElementById('listOfitems');
+                const elem = document.getElementById(UserId)
+                parentNode.removeChild(elem);
+            }
+        </script>
+
+
+    </body>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.2/axios.min.js"></script>
+</html>
